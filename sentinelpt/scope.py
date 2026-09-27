@@ -9,6 +9,17 @@ def validate_target(target: str, allowed: set[str]) -> str:
         raise ScopeError(f"Target {target!r} is not in the explicit allowlist.")
     return target
 
+def validate_network_target(target: str, allowed: set[str]) -> str:
+    target = target.strip()
+    if target not in allowed:
+        raise ScopeError(f"Network {target!r} is not in the explicit allowlist.")
+    try:
+        import ipaddress
+        ipaddress.ip_network(target, strict=False)
+    except ValueError as e:
+        raise ScopeError("Network target must be a valid IP/CIDR.") from e
+    return target
+
 def validate_url(url: str, allowed_hosts: set[str]) -> tuple[str, str]:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
